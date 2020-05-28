@@ -1,13 +1,13 @@
 {
-  "name": "grid-this",
-  "version": "1.0.1",
+  "name": "get-grid",
+  "version": "1.0.0",
   "description": "Create CSS grids using the command line",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
-    "grid-this": "app.js"
+    "get-grid": "app.js"
   },
   "keywords": [
     "autogenerate",
@@ -22,5 +22,5 @@
     "commander": "^5.1.0",
     "emmet": "^2.0.2"
   },
-  "repository": "github:Saunved/grid-this"
+  "repository": "github:Saunved/get-grid"
 }
