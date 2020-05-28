@@ -1,0 +1,26 @@
+{
+  "name": "grid-this",
+  "version": "1.0.0",
+  "description": "Create CSS grids using the command line",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "grid-this": "app.js"
+  },
+  "keywords": [
+    "cli",
+    "css",
+    "grid",
+    "css-grid"
+  ],
+  "author": "Saunved",
+  "license": "ISC",
+  "dependencies": {
+    "clipboardy": "^2.3.0",
+    "commander": "^5.1.0",
+    "emmet": "^2.0.2",
+    "randomcolor": "^0.5.4"
+  }
+}
