@@ -1,6 +1,6 @@
 {
   "name": "grid-this",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Create CSS grids using the command line",
   "main": "app.js",
   "scripts": {
@@ -10,7 +10,7 @@
     "grid-this": "app.js"
   },
   "keywords": [
-    "cli",
+    "autogenerate",
     "css",
     "grid",
     "css-grid"
@@ -20,7 +20,7 @@
   "dependencies": {
     "clipboardy": "^2.3.0",
     "commander": "^5.1.0",
-    "emmet": "^2.0.2",
-    "randomcolor": "^0.5.4"
-  }
+    "emmet": "^2.0.2"
+  },
+  "repository": "github:Saunved/grid-this"
 }
