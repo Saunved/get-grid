@@ -11,7 +11,7 @@ the best version of itself. Feel free to report issues, edge cases, and suggest 
 program
 .option('-c, --columns <value>', 'set the number of columns', '1')
 .option('-r, --rows <value>', 'set the number of rows', '1')
-.option('-C, --class <type>', 'provide a class name for the grid', 'grid-container')
+.option('-C, --container <type>', 'provide a container for the grid', '.grid-container')
 .option('-q, --query <value>', 'generate grid with custom classes based on a query')
 .option('-t, --template <value>', 'generate code based on predefined layouts')
 .option('-s, --only-style', 'output only the style')
@@ -27,26 +27,26 @@ program
     /* The command is processed starting from here */
     let html = '';
     let style = '';
-    let className = args.class|| 'grid-container';
+    let container = args.container || '.grid-container';
 
 
     /* Get the HTML, CSS */
     if(args.query){
-        let parsed = parseQuery(args.query, className);
+        let parsed = parseQuery(args.query, container);
         html = parsed.html;
         style = parsed.style;
     }
     else if (args.template){
-        html = generateHTMLFrom(args.template, className);
-        style = generateStyleFrom(args.template, className);
+        html = generateHTMLFrom(args.template, container);
+        style = generateStyleFrom(args.template, container);
     }
     else if(args.emmet){
         html = emmet.default(args.emmet);
-        style = generateStyle(args.columns, args.rows, className);
+        style = generateStyle(args.columns, args.rows, container);
     }
     else {
-        html = generateHTML(args.columns, args.rows, className);
-        style = generateStyle(args.columns, args.rows, className);
+        html = generateHTML(args.columns, args.rows, container);
+        style = generateStyle(args.columns, args.rows, container);
     }
         
     /* Decide how it will be output */
@@ -83,35 +83,47 @@ program.parse(process.argv);
  * Generates the HTML code based on the number of columns and rows. Not used for query parsing.
  * @param {*} c Indicates the number of columns
  * @param {*} r Indicates the number of rows
- * @param {*} className The default parent classname or the user-defined classname (if specified)
+ * @param {*} container The default parent classname or the user-defined classname (if specified)
  * @returns a back-ticked string with the HTML code
  */
-function generateHTML(c, r, className){
+function generateHTML(c, r, container){
     let html = '';
-    if(className){
-        html+=`<div class="${className}">\n`
+    if(container){
+        let generatedHtml = resolveSelectorAndGenerateHtml(container);
+        console.log(generatedHtml);
+        html+=generatedHtml.start;
         for(let i=0; i<c*r; i++){
             html+=`\t<div>${i+1}</div>\n`;
         }
-        html+=`</div>`
-    }
-    else{
-        html+=`<div>
-</div>`
+        html+=generatedHtml.end;
     }
 
     return html;
+}
+
+function resolveSelectorAndGenerateHtml(container){
+    let start = '';
+    let end = '';
+
+    // TODO: Verify if this breaks for any edge cases
+    start = emmet.default(container).split('</')[0];
+    end = '</' + emmet.default(container).split('</')[1];
+
+    return {
+        start: start,
+        end: end
+    }
 }
 
 /**
  * Generates the CSS based on the number of rows and columns specified. Not used for query parsing.
  * @param {*} c Indicates the number of columns
  * @param {*} r Indicates the number of rows
- * @param {*} className The default parent classname or the user-defined classname (if specified)
+ * @param {*} container The default parent classname or the user-defined classname (if specified)
  * @returns a back-ticked string with the CSS
  */
-function generateStyle(c, r, className){
-    return `.${className}{
+function generateStyle(c, r, container){
+    return `${container}{
 display: grid;
 grid-template-columns: repeat(${c}, 1fr);
 grid-template-rows: repeat(${r}, 1fr);
@@ -123,31 +135,31 @@ grid-gap: 1em;
 /**
  * Generates both the HTML for a known template
  * @param {*} template can be one of holy-grail | 2-col | 3-col | 4-col | 2-row | 3-row | 4-row
- * @param {*} className
+ * @param {*} container
  * @returns a back-ticked string with the HTML
  */
-function generateHTMLFrom(template, className){
+function generateHTMLFrom(template, container){
     switch(template){
         case 'holy-grail': {
-            return getHolyGrail(className).html;
+            return getHolyGrail(container).html;
         }
         case '2-col': {
-            return generateHTML(2, 1, className);
+            return generateHTML(2, 1, container);
         }
         case '3-col': {
-            return generateHTML(3, 1, className);
+            return generateHTML(3, 1, container);
         }
         case '4-col': {
-            return generateHTML(4, 1, className);
+            return generateHTML(4, 1, container);
         }
         case '2-row': {
-            return generateHTML(1, 2, className);
+            return generateHTML(1, 2, container);
         }
         case '3-row': {
-            return generateHTML(1, 3, className);
+            return generateHTML(1, 3, container);
         }
         case '4-row': {
-            return generateHTML(1, 4, className);
+            return generateHTML(1, 4, container);
         }
 
     }
@@ -157,31 +169,31 @@ function generateHTMLFrom(template, className){
 /**
  * Generates the CSS for a known template.
  * @param {*} template can be one of holy-grail | 2-col | 3-col | 4-col | 2-row | 3-row | 4-row
- * @param {*} className
+ * @param {*} container
  * @returns a back-ticked string with the CSS
  */
-function generateStyleFrom(template, className){
+function generateStyleFrom(template, container){
     switch(template){
         case 'holy-grail': {
-            return getHolyGrail(className).style;
+            return getHolyGrail(container).style;
         }
         case '2-col': {
-            return generateStyle(2, 1, className);
+            return generateStyle(2, 1, container);
         }
         case '3-col': {
-            return generateStyle(3, 1, className);
+            return generateStyle(3, 1, container);
         }
         case '4-col': {
-            return generateStyle(4, 1, className);
+            return generateStyle(4, 1, container);
         }
         case '2-row': {
-            return generateStyle(1, 2, className);
+            return generateStyle(1, 2, container);
         }
         case '3-row': {
-            return generateStyle(1, 3, className);
+            return generateStyle(1, 3, container);
         }
         case '4-row': {
-            return generateStyle(1, 4, className);
+            return generateStyle(1, 4, container);
         }
     }
 }
@@ -191,10 +203,10 @@ function generateStyleFrom(template, className){
  * Given a query, parses it and generates both the HTML and CSS
  *
  * @param {*} query The string query for generating the code
- * @param {*} className Custom classname if specified, otherwise default is used
+ * @param {*} container Custom classname if specified, otherwise default is used
  * @returns an object containing {html: <the-html>, css: <the-css> }
  */
-function parseQuery(query, className){
+function parseQuery(query, container){
     let numRows = 0;
     let numCols = 0;
     let rows = [];
@@ -203,7 +215,7 @@ function parseQuery(query, className){
 
     /* Computes the number of rows and columns and creates the "rows" array */
     entireRows.forEach(fullRow => {
-        let col = fullRow.split('-');
+        let col = fullRow.split(',');
         rows.push(col);
         numCols = Math.max(numCols, col.length);
         if(fullRow.toString().includes('*')){
@@ -218,9 +230,10 @@ function parseQuery(query, className){
 let classes = buildClassesFrom(rows, numRows, numCols);
 
 // Create the HTML
-html = `<div class="${className}">
+let containerHtml = resolveSelectorAndGenerateHtml(container);
+html =  `${containerHtml.start}
 ${buildHTMLFrom(classes)}
-</div>
+${containerHtml.end}
 `
 // Create the CSS
 let gridtemplateRows = '';
@@ -228,7 +241,7 @@ for(let i=0;i<numRows;i++){
     gridtemplateRows+=`1fr `;
 }
 
-let style = `.${className}{
+let style = `${container}{
 display: grid;
 grid-template-rows: ${gridtemplateRows};
 grid-template-columns: repeat(${numCols}, 1fr);
@@ -255,7 +268,7 @@ style+=buildStylesFrom(classes).toString();
  */
 function buildClassesFrom(rows, numRows, numCols){
     let classes = {};
-    let uniqueClasses = new Set();
+    let uniqueSelectors = new Set();
     let prevCol = '';
     let prevRow = -1;
 
@@ -264,13 +277,13 @@ function buildClassesFrom(rows, numRows, numCols){
         row.forEach((col, cidx) => {
             if(!col.includes('*'))
             {
-                // Class is encountered for the first time
-                if(!uniqueClasses.has(col)){
+                // Selector is encountered for the first time
+                if(!uniqueSelectors.has(col)){
                     classes[col] = {};
                     classes[col].padding = '1.5rem';
                     classes[col].gridColumnStart = cidx+1;
                     classes[col].gridRowStart = ridx+1;
-                    uniqueClasses.add(col);
+                    uniqueSelectors.add(col);
 
                     // We are on a unique column, but same row
                     if(prevRow===ridx){
@@ -292,7 +305,7 @@ function buildClassesFrom(rows, numRows, numCols){
     })
 
     // Computes the gridRowEnd and gridColumnEnd properties for classes that were at the end of the row
-    uniqueClasses.forEach(cssClass => {
+    uniqueSelectors.forEach(cssClass => {
         if( !classes[cssClass].gridRowEnd ) {
             classes[cssClass].gridRowEnd = classes[cssClass].gridRowStart;
         }
@@ -309,13 +322,15 @@ function buildClassesFrom(rows, numRows, numCols){
 /**
  * Builds HTML based on the classes created by the buildClassesFrom(...) function
  *
- * @param {*} classes
+ * @param {*} selectors
  * @returns
  */
-function buildHTMLFrom(classes){
+function buildHTMLFrom(selectors){
     let html = '';
-    for(key in classes){
-        html+=`<div class="${key}">${key}</div>\n`
+    for(key in selectors){
+        let generatedHtml = resolveSelectorAndGenerateHtml(key);
+        html+=generatedHtml.start + generatedHtml.end;
+        // html+=`<div class="${key}">${key}</div>\n`
     }
     return html;
 }
@@ -324,16 +339,16 @@ function buildHTMLFrom(classes){
 /**
  * Builds CSS based on the classes created by the buildClassesFrom(...) function
  *
- * @param {*} classes
+ * @param {*} selectors
  * @returns
  */
-function buildStylesFrom(classes){
+function buildStylesFrom(selectors){
     let style = '';
-    for(let key in classes){
-style+=`.${key}{
-padding: ${classes[key].padding};
-grid-column: ${classes[key].gridColumnStart} / ${classes[key].gridColumnEnd};
-grid-row: ${classes[key].gridRowStart} / ${classes[key].gridRowEnd};
+    for(let key in selectors){
+style+=`${key}{
+padding: ${selectors[key].padding};
+grid-column: ${selectors[key].gridColumnStart} / ${selectors[key].gridColumnEnd};
+grid-row: ${selectors[key].gridRowStart} / ${selectors[key].gridRowEnd};
 background: #eaeaea;
 }\n`
 
@@ -343,9 +358,9 @@ background: #eaeaea;
 }
 
 /* TEMPLATES ARE STORED BELOW THIS POINT */
-function getHolyGrail(className){
+function getHolyGrail(container){
     return {
-        html: `<div class="${className}">
+        html: `<div class="${container}">
         <header>
           Header
         </header>
@@ -366,7 +381,7 @@ function getHolyGrail(className){
           Footer
         </footer>
       </div>`,
-      style : `.${className} {
+      style : `.${container} {
         display: grid;
         grid-template-columns: 150px auto 150px;
         grid-template-rows: repeat(3, 100px);
@@ -398,4 +413,3 @@ a/b-c-c-c/d
 header/sidebar-content-content-content/footer1-footer1-footer2-footer2
 
 */
-
