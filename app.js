@@ -17,8 +17,10 @@ program
 .option('-s, --only-style', 'output only the style')
 .option('-h, --only-html','output only the html')
 .option('-o, --output', 'output data to screen instead of copying')
+.option('-d, --default', 'Adds a default margin and padding to elements')
+.option('-H, --highlight', 'Adds a default background color and border to elements')
 .option('-e, --emmet <value>', 'EXPERIMENTAL define custom html using emmet, wrap in quotes')
-.option('-g, --no-gap', 'NOT IMPLEMENTED do not specify any padding or margin')
+.option('-g, --no-gap', 'NOT IMPLEMENTED / REDUNDANT do not specify any padding or margin')
 .option('-a, --center', 'NOT IMPLEMENTED center align the content')
 .option('-p, --padding <number>', 'NOT IMPLEMENTED set the padding between columns and rows')
 .option('-m, --margin <number>', 'NOT IMPLEMENTED set the margin between columns and rows')
@@ -32,7 +34,7 @@ program
 
     /* Get the HTML, CSS */
     if(args.query){
-        let parsed = parseQuery(args.query, container);
+        let parsed = parseQuery(args.query, container, args.default, args.highlight);
         html = parsed.html;
         style = parsed.style;
     }
@@ -74,6 +76,7 @@ program
             console.log(html + '\n' + style);
         }
     }
+
 })
 
 program.parse(process.argv);
@@ -97,7 +100,6 @@ function generateHTML(c, r, container){
         }
         html+=generatedHtml.end;
     }
-
     return html;
 }
 
@@ -206,7 +208,7 @@ function generateStyleFrom(template, container){
  * @param {*} container Custom classname if specified, otherwise default is used
  * @returns an object containing {html: <the-html>, css: <the-css> }
  */
-function parseQuery(query, container){
+function parseQuery(query, container, defaults, highlights){
     let numRows = 0;
     let numCols = 0;
     let rows = [];
@@ -227,7 +229,7 @@ function parseQuery(query, container){
     });
 
 // Generate the classes
-let classes = buildClassesFrom(rows, numRows, numCols);
+let classes = buildSelectorsFrom(rows, numRows, numCols);
 
 // Create the HTML
 let containerHtml = resolveSelectorAndGenerateHtml(container);
@@ -245,10 +247,15 @@ let style = `${container}{
 display: grid;
 grid-template-rows: ${gridtemplateRows};
 grid-template-columns: repeat(${numCols}, 1fr);
-grid-gap: 1em;
-}\n`
+`
 
-style+=buildStylesFrom(classes).toString();
+if(defaults){
+    style+= `grid-gap: 1em;
+    `;
+}
+style+=`}\n`;
+
+style+=buildStylesFrom(classes, defaults, highlights).toString();
 
     return {
         style: style,
@@ -266,8 +273,8 @@ style+=buildStylesFrom(classes).toString();
  * @param {*} numCols
  * @returns an array of objects containing unique classes along with values for column-start, column-end, etc.
  */
-function buildClassesFrom(rows, numRows, numCols){
-    let classes = {};
+function buildSelectorsFrom(rows, numRows, numCols){
+    let selectors = {};
     let uniqueSelectors = new Set();
     let prevCol = '';
     let prevRow = -1;
@@ -279,21 +286,21 @@ function buildClassesFrom(rows, numRows, numCols){
             {
                 // Selector is encountered for the first time
                 if(!uniqueSelectors.has(col)){
-                    classes[col] = {};
-                    classes[col].padding = '1.5rem';
-                    classes[col].gridColumnStart = cidx+1;
-                    classes[col].gridRowStart = ridx+1;
+                    selectors[col] = {};
+                    selectors[col].padding = '1.5rem';
+                    selectors[col].gridColumnStart = cidx+1;
+                    selectors[col].gridRowStart = ridx+1;
                     uniqueSelectors.add(col);
 
                     // We are on a unique column, but same row
                     if(prevRow===ridx){
-                        classes[prevCol].gridColumnEnd = classes[col].gridColumnStart;
+                        selectors[prevCol].gridColumnEnd = selectors[col].gridColumnStart;
                     }
                 }
                 else {
                     // Non-unique column but same row
-                    classes[col].gridRowEnd = ridx+1; // keep same row (NB: ridx starts from 0)
-                    classes[col].gridColumnEnd = cidx+2; // increase col by 1 (NB: cidx starts from 0)
+                    selectors[col].gridRowEnd = ridx+1; // keep same row (NB: ridx starts from 0)
+                    selectors[col].gridColumnEnd = cidx+2; // increase col by 1 (NB: cidx starts from 0)
                 }
             }
             else{
@@ -306,16 +313,16 @@ function buildClassesFrom(rows, numRows, numCols){
 
     // Computes the gridRowEnd and gridColumnEnd properties for classes that were at the end of the row
     uniqueSelectors.forEach(cssClass => {
-        if( !classes[cssClass].gridRowEnd ) {
-            classes[cssClass].gridRowEnd = classes[cssClass].gridRowStart;
+        if( !selectors[cssClass].gridRowEnd ) {
+            selectors[cssClass].gridRowEnd = selectors[cssClass].gridRowStart;
         }
 
-        if(!classes[cssClass].gridColumnEnd){
-            classes[cssClass].gridColumnEnd = numCols+1;
+        if(!selectors[cssClass].gridColumnEnd){
+            selectors[cssClass].gridColumnEnd = numCols+1;
         }
     })
 
-    return classes;
+    return selectors;
 }
 
 
@@ -342,19 +349,22 @@ function buildHTMLFrom(selectors){
  * @param {*} selectors
  * @returns
  */
-function buildStylesFrom(selectors){
+function buildStylesFrom(selectors, defaults, highlights){
     let style = '';
     for(let key in selectors){
 style+=`${key}{
-padding: ${selectors[key].padding};
 grid-column: ${selectors[key].gridColumnStart} / ${selectors[key].gridColumnEnd};
 grid-row: ${selectors[key].gridRowStart} / ${selectors[key].gridRowEnd};
-background: #eaeaea;
-}\n`
-
+`
+    if(defaults){
+        style+=`padding: ${selectors[key].padding};\n`;
+    }
+    if(highlights){
+        style+=`background: #eaeaea;\n`
+    }
+    style+="}\n"
 }
     return style;
-
 }
 
 /* TEMPLATES ARE STORED BELOW THIS POINT */
