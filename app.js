@@ -8,6 +8,21 @@ This entire code is spaghetti at the moment. I have documented it in bits and pi
 the best version of itself. Feel free to report issues, edge cases, and suggest fixes or add enhancements.
 */
 
+program.on('--help', () => {
+    console.log(`\nThe query notation is different for get-grid@1.0.1 and get-grid@2.0.0.
+Columns are now separated using "," instead of "-".
+You can also specify one-level deep CSS selectors in the query now (classes, IDs, tags) and the relevant HTML and CSS for them will be generated.
+For example:
+get-grid -Hdq header/aside,.content,.content,.content/footer.left-footer,footer.left-footer,footer.right-footer,footer.right-footer
+Try it out! 
+
+You can use the -H and the -d flags to highlight the generated HTML and add default padding/margin.
+
+E.g. 
+get-grid -Hdq header/aside,.content,.content,.content/footer.left-footer,footer.left-footer,footer.right-footer,footer.right-footer
+`)
+})
+
 program
 .option('-c, --columns <value>', 'set the number of columns', '1')
 .option('-r, --rows <value>', 'set the number of rows', '1')
@@ -79,6 +94,7 @@ program
 
 })
 
+
 program.parse(process.argv);
 
 
@@ -107,9 +123,9 @@ function resolveSelectorAndGenerateHtml(container){
     let start = '';
     let end = '';
 
-    // TODO: Verify if this breaks for any edge cases
+    // TODO: Verify if this breaks for any edge cases [it is assumed here that only ONE element will be specified]
     start = emmet.default(container).split('</')[0];
-    end = '</' + emmet.default(container).split('</')[1];
+    end = '</' + emmet.default(container).split('</')[1]+'\n';
 
     return {
         start: start,
@@ -204,8 +220,10 @@ function generateStyleFrom(template, container){
 /**
  * Given a query, parses it and generates both the HTML and CSS
  *
- * @param {*} query The string query for generating the code
- * @param {*} container Custom classname if specified, otherwise default is used
+ * @param {String} query The string query for generating the code
+ * @param {String} container Custom classname if specified, otherwise default is used
+ * @param {Boolean} defaults Boolean value which determines whether default padding/margin should be set
+ * @param {Boolean} highlights Value which determine whether background and borders should be set
  * @returns an object containing {html: <the-html>, css: <the-css> }
  */
 function parseQuery(query, container, defaults, highlights){
@@ -228,13 +246,13 @@ function parseQuery(query, container, defaults, highlights){
         }
     });
 
-// Generate the classes
-let classes = buildSelectorsFrom(rows, numRows, numCols);
+// Generate the selectors
+let selectors = buildSelectorsFrom(rows, numRows, numCols);
 
 // Create the HTML
 let containerHtml = resolveSelectorAndGenerateHtml(container);
 html =  `${containerHtml.start}
-${buildHTMLFrom(classes)}
+${buildHTMLFrom(selectors, defaults, highlights)}
 ${containerHtml.end}
 `
 // Create the CSS
@@ -255,7 +273,7 @@ if(defaults){
 }
 style+=`}\n`;
 
-style+=buildStylesFrom(classes, defaults, highlights).toString();
+style+=buildStylesFrom(selectors, defaults, highlights).toString();
 
     return {
         style: style,
@@ -332,11 +350,15 @@ function buildSelectorsFrom(rows, numRows, numCols){
  * @param {*} selectors
  * @returns
  */
-function buildHTMLFrom(selectors){
+function buildHTMLFrom(selectors, defaults, highlights){
     let html = '';
     for(key in selectors){
         let generatedHtml = resolveSelectorAndGenerateHtml(key);
-        html+=generatedHtml.start + generatedHtml.end;
+        html+=generatedHtml.start;
+        if(highlights){
+            html+=key;
+        }
+        html+=generatedHtml.end;
         // html+=`<div class="${key}">${key}</div>\n`
     }
     return html;
