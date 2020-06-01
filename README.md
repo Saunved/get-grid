@@ -27,26 +27,27 @@ Each row of the grid is separated using "/" (forward slash) and each column is s
 
 * Create a simple webpage layout:
 ```shell
-get-grid -dH --query header/aside,.content,.content/footer 
+get-grid -dH --query "header/aside,.content,.content/footer" 
 ```
-You can use "-d" and "-H" flags to add default margin/padding and add background, naming respectively.
 
 *You can read the above query as:
 "On the 1st row, create a header. On the 2nd row create one-third of an aside, and two thirds of .content. On the last row, create a footer."*
 
+You can use "-d" and "-H" flags to add default margin/padding and add background, naming respectively.
+
 * You can use IDs, classes, web components, semantic HTML
 ```shell
-get-grid -dH --query header/aside#left-aside,article,article,custom-widget/footer.social-media/footer.links
+get-grid -dH --query "header/aside#left-aside,article,article,custom-widget/footer.social-media/footer.links"
 ```
 
 * Holy-grail using get-grid
 ```shell
-get-grid -dH --query header/aside.left-aside,.content,.content,aside.right-aside/footer
+get-grid -dH --query "header/aside.left-aside,.content,.content,aside.right-aside/footer"
 ```
 
 * Another common layout (say, for mobile)
 ```shell
-get-grid -dH --container "div.mobile-site" --query header/nav#menu/.content/footer
+get-grid -dH --container "div.mobile-site" --query "header/nav#menu/.content/footer"
 ```
 
 If a row contains only 1 column that spans the full width, there is no need to specify it more than once.
