@@ -1,6 +1,6 @@
 Install the tool from npm:
 ```shell
-npm i get-grid -g
+npm i get-grid@next -g
 ```
 
 I haven't documented extensively but you can run:
