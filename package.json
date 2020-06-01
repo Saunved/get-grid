@@ -1,6 +1,6 @@
 {
   "name": "get-grid",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Create CSS grids using the command line",
   "main": "app.js",
   "scripts": {
