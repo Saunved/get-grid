@@ -40,7 +40,10 @@ program
 .option('-p, --padding <number>', 'NOT IMPLEMENTED set the padding between columns and rows')
 .option('-m, --margin <number>', 'NOT IMPLEMENTED set the margin between columns and rows')
 .action(function(args){
-    
+    getGrid(args);
+})
+
+function getGrid(args){
     /* The command is processed starting from here */
     let html = '';
     let style = '';
@@ -54,8 +57,8 @@ program
         style = parsed.style;
     }
     else if (args.template){
-        html = generateHTMLFrom(args.template, container);
-        style = generateStyleFrom(args.template, container);
+        html = generateTemplateHtml(args.template, container);
+        style = generateTemplateStyle(args.template, container);
     }
     else if(args.emmet){
         html = emmet.default(args.emmet);
@@ -69,34 +72,39 @@ program
     /* Decide how it will be output */
 
     if(!args.output){
+        console.log('Grid copied to clipboard');
         if(args.onlyStyle){
             clip.writeSync(style);
+            return { style: style }
         }
         else if(args.onlyHtml){
             clip.writeSync(html);    
+            return { html, html }
         }
         else{
             clip.writeSync(html + '\n' + style);
+            return { html, html, style: style }
         }
-        console.log('Grid copied to clipboard');
     }
     else{
         if(args.onlyStyle){
             console.log(style); 
+            return { style: style }
         }
         else if(args.onlyHtml){
             console.log(html);
+            return { html, html }
         }
         else{
             console.log(html + '\n' + style);
+            return { html, html, style: style }
         }
     }
+}
 
-})
-
-
-program.parse(process.argv);
-
+if(process.env.NODE_ENV!=='test'){
+    program.parse(process.argv);
+}
 
 /**
  * Generates the HTML code based on the number of columns and rows. Not used for query parsing.
@@ -109,7 +117,7 @@ function generateHTML(c, r, container){
     let html = '';
     if(container){
         let generatedHtml = resolveSelectorAndGenerateHtml(container);
-        console.log(generatedHtml);
+        // console.log(generatedHtml);
         html+=generatedHtml.start;
         for(let i=0; i<c*r; i++){
             html+=`\t<div>${i+1}</div>\n`;
@@ -156,10 +164,11 @@ grid-gap: 1em;
  * @param {*} container
  * @returns a back-ticked string with the HTML
  */
-function generateHTMLFrom(template, container){
+function generateTemplateHtml(template, container){
     switch(template){
         case 'holy-grail': {
-            return getHolyGrail(container).html;
+            // return getHolyGrail(container).html;
+            return parseQuery("header/aside.left-sidebar,article,article,aside.right-sidebar/footer", container, true, true).html;
         }
         case '2-col': {
             return generateHTML(2, 1, container);
@@ -190,10 +199,11 @@ function generateHTMLFrom(template, container){
  * @param {*} container
  * @returns a back-ticked string with the CSS
  */
-function generateStyleFrom(template, container){
+function generateTemplateStyle(template, container){
     switch(template){
         case 'holy-grail': {
-            return getHolyGrail(container).style;
+            // return getHolyGrail(container).style;
+            return parseQuery("header/aside.left-sidebar,article,article,aside.right-sidebar/footer", container, true, true).style;
         }
         case '2-col': {
             return generateStyle(2, 1, container);
@@ -227,32 +237,16 @@ function generateStyleFrom(template, container){
  * @returns an object containing {html: <the-html>, css: <the-css> }
  */
 function parseQuery(query, container, defaults, highlights){
-    let numRows = 0;
-    let numCols = 0;
-    let rows = [];
-    let entireRows = query.split('/');
-
-
-    /* Computes the number of rows and columns and creates the "rows" array */
-    entireRows.forEach(fullRow => {
-        let col = fullRow.split(',');
-        rows.push(col);
-        numCols = Math.max(numCols, col.length);
-        if(fullRow.toString().includes('*')){
-            numRows+=parseInt(fullRow.toString().split('*')[1]);
-        }
-        else{
-            numRows++;
-        }
-    });
+// Get the rows, and the number of rows, columns
+let {rows, numRows, numCols} = getQueryRows(query);
 
 // Generate the selectors
-let selectors = buildSelectorsFrom(rows, numRows, numCols);
+let selectors = buildSelectorDataForQuery(rows, numRows, numCols);
 
 // Create the HTML
 let containerHtml = resolveSelectorAndGenerateHtml(container);
 html =  `${containerHtml.start}
-${buildHTMLFrom(selectors, defaults, highlights)}
+${buildHTMLForQuery(selectors, defaults, highlights)}
 ${containerHtml.end}
 `
 // Create the CSS
@@ -273,7 +267,7 @@ if(defaults){
 }
 style+=`}\n`;
 
-style+=buildStylesFrom(selectors, defaults, highlights).toString();
+style+=buildStylesForQuery(selectors, defaults, highlights).toString();
 
     return {
         style: style,
@@ -281,7 +275,24 @@ style+=buildStylesFrom(selectors, defaults, highlights).toString();
     }
 }
 
-
+function getQueryRows(query){
+    let numRows = 0;
+    let numCols = 0;
+    let entireRows = query.split('/');
+    let rows = [];
+    entireRows.forEach(fullRow => {
+        let col = fullRow.split(',');
+        rows.push(col);
+        numCols = Math.max(numCols, col.length);
+        if(fullRow.toString().includes('*')){
+            numRows+=parseInt(fullRow.toString().split('*')[1]);
+        }
+        else{
+            numRows++;
+        }
+    });
+    return {rows: rows, numRows: numRows, numCols: numCols};
+}
 
 /**
  * Given the data of rows and columns, tries to find unique classes
@@ -291,7 +302,7 @@ style+=buildStylesFrom(selectors, defaults, highlights).toString();
  * @param {*} numCols
  * @returns an array of objects containing unique classes along with values for column-start, column-end, etc.
  */
-function buildSelectorsFrom(rows, numRows, numCols){
+function buildSelectorDataForQuery(rows, numRows, numCols){
     let selectors = {};
     let uniqueSelectors = new Set();
     let prevCol = '';
@@ -350,16 +361,18 @@ function buildSelectorsFrom(rows, numRows, numCols){
  * @param {*} selectors
  * @returns
  */
-function buildHTMLFrom(selectors, defaults, highlights){
+function buildHTMLForQuery(selectors, defaults, highlights){
     let html = '';
     for(key in selectors){
         let generatedHtml = resolveSelectorAndGenerateHtml(key);
         html+=generatedHtml.start;
+
+        // Prints the name of the selector inside the tag
         if(highlights){
-            html+=key;
+            html+=key; 
         }
+
         html+=generatedHtml.end;
-        // html+=`<div class="${key}">${key}</div>\n`
     }
     return html;
 }
@@ -371,7 +384,7 @@ function buildHTMLFrom(selectors, defaults, highlights){
  * @param {*} selectors
  * @returns
  */
-function buildStylesFrom(selectors, defaults, highlights){
+function buildStylesForQuery(selectors, defaults, highlights){
     let style = '';
     for(let key in selectors){
 style+=`${key}{
@@ -389,59 +402,12 @@ grid-row: ${selectors[key].gridRowStart} / ${selectors[key].gridRowEnd};
     return style;
 }
 
-/* TEMPLATES ARE STORED BELOW THIS POINT */
-function getHolyGrail(container){
-    return {
-        html: `<div class="${container}">
-        <header>
-          Header
-        </header>
-      
-        <aside class="sidebar-left">
-          Left Sidebar
-        </aside>
-      
-        <article>
-          Article
-        </article>
-      
-        <aside class="sidebar-right">
-          Right Sidebar
-        </aside>
-        
-        <footer>
-          Footer
-        </footer>
-      </div>`,
-      style : `.${container} {
-        display: grid;
-        grid-template-columns: 150px auto 150px;
-        grid-template-rows: repeat(3, 100px);
-        grid-gap: 1em;
-      }
-      
-      header,
-      aside,
-      article,
-      footer {
-        background: #eaeaea;
-        padding: 1em;
-      }
-      
-      header, footer {
-        grid-column: 1 / 4;
-      }`
-    }
-}
-
-// gridQuery examples
-// Default unit is assumed as fr
-/*
-a-a-f-f/b-c-c-cx3
-
-a/b-c-c-dx3/e
-
-a/b-c-c-c/d
-header/sidebar-content-content-content/footer1-footer1-footer2-footer2
-
-*/
+module.exports.generateHTML = generateHTML;
+module.exports.resolveSelectorAndGenerateHtml = resolveSelectorAndGenerateHtml;
+module.exports.getQueryRows = getQueryRows;
+module.exports.buildSelectorDataForQuery = buildSelectorDataForQuery;
+module.exports.buildHTMLForQuery = buildHTMLForQuery;
+module.exports.buildStylesForQuery = buildStylesForQuery;
+module.exports.generateTemplateStyle = generateTemplateStyle;
+module.exports.generateTemplateHtml = generateTemplateHtml;
+module.exports.getGrid = getGrid;
