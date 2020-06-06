@@ -1,6 +1,6 @@
 {
   "name": "get-grid",
-  "version": "2.0.4-alpha.1",
+  "version": "2.0.4-beta.1",
   "description": "Create CSS grids using the command line",
   "main": "app.js",
   "scripts": {
@@ -26,7 +26,6 @@
   "repository": "github:Saunved/get-grid",
   "devDependencies": {
     "jest": "^26.0.1",
-    "jest-html-reporter": "^3.1.3",
     "qree": "^1.0.4"
   }
 }

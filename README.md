@@ -60,4 +60,27 @@ get-grid --help
 There are options to output directly to console, to geto only the style or only the HTML, etc.
 * * *
 
+### Contributing / testing
 If you would like to contribute, you will have to understand how [commander.js](https://www.npmjs.com/package/commander) works since we are using that to create the CLI. I have tried documenting the functions in the ```app.js``` file. Feel free to optimize code, report bugs, or add new features.
+
+Specific areas where you can contribute:
+1. Improve the existing tests
+2. Create extensions/plugins for popular IDEs (to create CSS grids inside the IDE itself)
+3. Add more predefined templates to the tool
+
+To run the tool locally, you can simply run:
+```shell
+npm i . -g
+```
+
+If npm throws an error, change the package version number in the package.json file and retry.
+* * *
+You can run tests using 
+```shell
+npm run test
+```
+or 
+```shell
+npm run coverage
+```
+to get a coverage report for the test.

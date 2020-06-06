@@ -88,23 +88,28 @@ describe('resolveSelectorAndGenerateHTML', () => {
 })
 
 describe('getQueryRows', () => {
+
+    let rows, numRows, numCols;
+    beforeAll(() => {
+        let queryRows = app.getQueryRows("body/aside,article,article/footer");
+        rows = queryRows.rows;
+        numRows = queryRows.numRows;
+        numCols = queryRows.numCols;
+    })
     
     test('should give an output', () => {
-        let {rows, numRows, numCols} = app.getQueryRows("body/aside,article,article/footer");
         expect(rows).toBeDefined();
         expect(numRows).toBeDefined();
         expect(numCols).toBeDefined();
     })
 
     test('number of rows, columns output should be correct', () => {
-        let {rows, numRows, numCols} = app.getQueryRows("body/aside,article,article/footer");
         expect(rows.length).toEqual(3);
         expect(numRows).toEqual(3);
         expect(numCols).toEqual(3);
     })
 
     test('rows should be created correctly', () => {
-        let {rows, numRows, numCols} = app.getQueryRows("body/aside,article,article/footer");
         expect(rows[0]).toEqual(['body'])
         expect(rows[1]).toEqual(['aside','article','article'])
         expect(rows[2]).toEqual(['footer'])
@@ -113,15 +118,21 @@ describe('getQueryRows', () => {
 })
 
 describe('buildSelectorDataForQuery', () => {
+
+    let rows, numRows, numCols, selectors;
+    beforeAll(() => {
+        let queryRows = app.getQueryRows("body/aside,article,article/footer");
+        rows = queryRows.rows;
+        numRows = queryRows.numRows;
+        numCols = queryRows.numCols;
+        selectors = app.buildSelectorDataForQuery(rows, numRows, numCols)
+    })
     test('should give an output', () => {
-        let {rows, numRows, numCols} = app.getQueryRows("body/aside,article,article/footer");
-        expect(app.buildSelectorDataForQuery(rows, numRows, numCols))
+        expect(selectors)
         .toBeDefined();
     })
 
     test('should output an array with unique selectors #1', () => {
-        let {rows, numRows, numCols} = app.getQueryRows("body/aside,article,article/footer");
-        let selectors = app.buildSelectorDataForQuery(rows, numRows, numCols)
         expect(selectors['body']).toBeDefined();
         expect(selectors['aside']).toBeDefined();
         expect(selectors['article']).toBeDefined();
@@ -141,7 +152,6 @@ describe('buildSelectorDataForQuery', () => {
     test('should output an array with unique selectors #2', () => {
         let {rows, numRows, numCols} = app.getQueryRows("body.body/aside#one,.content,.content,aside#two/footer");
         let selectors = app.buildSelectorDataForQuery(rows, numRows, numCols);
-        // console.log(selectors);
         expect(selectors['body.body']).toBeDefined();
         expect(selectors['aside#one']).toBeDefined();
         expect(selectors['.content']).toBeDefined();
@@ -152,23 +162,27 @@ describe('buildSelectorDataForQuery', () => {
 })
 
 describe('buildHTMLForQuery', () => {
+
+    let rows, numRows, numCols, selectors;
+    beforeAll(() => {
+        let queryRows = app.getQueryRows("header/aside,.content,.content/footer");
+        rows = queryRows.rows;
+        numRows = queryRows.numRows;
+        numCols = queryRows.numCols;
+        selectors = app.buildSelectorDataForQuery(rows, numRows, numCols);
+    })
+
     test('should give an output', () => {
-        let {rows, numRows, numCols} = app.getQueryRows("header/aside,.content,.content/footer");
-        let selectors = app.buildSelectorDataForQuery(rows, numRows, numCols);
         expect(app.buildHTMLForQuery(selectors, false, false))
         .toBeDefined();
     })
 
     test('should be a string', () => {
-        let {rows, numRows, numCols} = app.getQueryRows("header/aside,.content,.content/footer");
-        let selectors = app.buildSelectorDataForQuery(rows, numRows, numCols);
         expect(typeof app.buildHTMLForQuery(selectors, false, false))
         .toEqual('string');
     })
 
     test('should output all the selectors in the HTML', () => {
-        let {rows, numRows, numCols} = app.getQueryRows("header/aside,.content,.content/footer");
-        let selectors = app.buildSelectorDataForQuery(rows, numRows, numCols);
         let generatedHtml = app.buildHTMLForQuery(selectors, false, false);
         document.body.innerHTML = generatedHtml;
         expect($('header')).toBeDefined();
@@ -179,8 +193,6 @@ describe('buildHTMLForQuery', () => {
     })
 
     test('should respect highlights', () => {
-        let {rows, numRows, numCols} = app.getQueryRows("header/aside,.content,.content/footer");
-        let selectors = app.buildSelectorDataForQuery(rows, numRows, numCols);
         let generatedHtml = app.buildHTMLForQuery(selectors, false, true)
         document.body.innerHTML = generatedHtml;
         expect($('header').innerHTML).toEqual('header');
@@ -192,23 +204,26 @@ describe('buildHTMLForQuery', () => {
 
 describe('buildStylesForQuery', () => {
 
+    let rows, numRows, numCols, selectors;
+    beforeAll(() => {
+        let queryRows = app.getQueryRows("header/aside,.content,.content/footer");
+        rows = queryRows.rows;
+        numRows = queryRows.numRows;
+        numCols = queryRows.numCols;
+        selectors = app.buildSelectorDataForQuery(rows, numRows, numCols);
+    })
+
     test('should give an output', () => {
-        let {rows, numRows, numCols} = app.getQueryRows("header/aside,.content,.content/footer");
-        let selectors = app.buildSelectorDataForQuery(rows, numRows, numCols);
         expect(app.buildStylesForQuery(selectors, false, false))
         .toBeDefined()
     })
 
     test('should be a string', () => {
-        let {rows, numRows, numCols} = app.getQueryRows("header/aside,.content,.content/footer");
-        let selectors = app.buildSelectorDataForQuery(rows, numRows, numCols);
         expect(typeof app.buildStylesForQuery(selectors, false, false))
         .toEqual('string')
     })
 
     test('should output correct CSS', () => {
-        let {rows, numRows, numCols} = app.getQueryRows("header/aside,.content,.content/footer");
-        let selectors = app.buildSelectorDataForQuery(rows, numRows, numCols);
         let generatedHtml = app.buildHTMLForQuery(selectors, false, false);
         let css = app.buildStylesForQuery(selectors, false, false);
         document.head.insertAdjacentHTML("beforeend", `<style>${css}</style>`)
@@ -225,8 +240,6 @@ describe('buildStylesForQuery', () => {
     })
 
     test('CSS should respect highlights and defaults', () => {
-        let {rows, numRows, numCols} = app.getQueryRows("header/aside,.content,.content/footer");
-        let selectors = app.buildSelectorDataForQuery(rows, numRows, numCols);
         let generatedHtml = app.buildHTMLForQuery(selectors, true, true);
         let css = app.buildStylesForQuery(selectors, true, true);
         document.head.insertAdjacentHTML("beforeend", `<style>${css}</style>`)

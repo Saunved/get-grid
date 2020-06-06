@@ -117,7 +117,6 @@ function generateHTML(c, r, container){
     let html = '';
     if(container){
         let generatedHtml = resolveSelectorAndGenerateHtml(container);
-        // console.log(generatedHtml);
         html+=generatedHtml.start;
         for(let i=0; i<c*r; i++){
             html+=`\t<div>${i+1}</div>\n`;
