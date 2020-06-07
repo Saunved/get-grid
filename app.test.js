@@ -3,22 +3,22 @@ const {$, $$} = require('qree');
 
 describe('generateHTML', () => {
     test('should give an output', () => {
-        expect(app.generateHTML(2,2,'.grid-container'))
+        expect(app._generateHTML(2,2,'.grid-container'))
         .toBeDefined();
     })
 
     test('should be a string', () => {
-        expect(typeof app.generateHTML(2,2,'.grid-container'))
+        expect(typeof app._generateHTML(2,2,'.grid-container'))
         .toBe('string');
     })
 
     test('should have the specified container', () => {
-        expect(app.generateHTML(2,2,'aside'))
+        expect(app._generateHTML(2,2,'aside'))
         .toContain('aside');
     })
 
     test('should have equal opening and closing tags', () => {
-        const generatedHtml = app.generateHTML(2,5,'.grid-container');
+        const generatedHtml = app._generateHTML(2,5,'.grid-container');
         const openTags = generatedHtml.split('<div').length;
         const closeTags = generatedHtml.split('</div>').length;
         expect(openTags)
@@ -28,60 +28,60 @@ describe('generateHTML', () => {
 
 describe('resolveSelectorAndGenerateHTML', () => {
     test('should give an output', () => {
-        expect(app.resolveSelectorAndGenerateHtml('aside'))
+        expect(app._resolveSelectorAndGenerateHtml('aside'))
         .toBeDefined();
     })
 
     test('should be an object', () => {
-        expect(typeof app.resolveSelectorAndGenerateHtml('aside'))
+        expect(typeof app._resolveSelectorAndGenerateHtml('aside'))
         .toBe('object');
     })
 
     test('should contain start and end keys', () => {
-        let html = app.resolveSelectorAndGenerateHtml('aside');
+        let html = app._resolveSelectorAndGenerateHtml('aside');
         expect(html.start).toBeDefined();
         expect(html.end).toBeDefined();
     })
     
 
     test('should accept semantic HTML tags', () => {
-        let html = app.resolveSelectorAndGenerateHtml('aside');
+        let html = app._resolveSelectorAndGenerateHtml('aside');
         expect(html.start.trim()).toEqual('<aside>')
         expect(html.end.trim()).toEqual('</aside>')
     })
 
     test('should accept IDs', () => {
-        let html = app.resolveSelectorAndGenerateHtml('#someid');
+        let html = app._resolveSelectorAndGenerateHtml('#someid');
         expect(html.start.trim()).toEqual('<div id="someid">')
         expect(html.end.trim()).toEqual('</div>')
     })
 
     test('should accept classes', () => {
-        let html = app.resolveSelectorAndGenerateHtml('.someclass');
+        let html = app._resolveSelectorAndGenerateHtml('.someclass');
         expect(html.start.trim()).toEqual('<div class="someclass">')
         expect(html.end.trim()).toEqual('</div>')
     })
 
     test('should accept classes with a -', () => {
-        let html = app.resolveSelectorAndGenerateHtml('.some-class');
+        let html = app._resolveSelectorAndGenerateHtml('.some-class');
         expect(html.start.trim()).toEqual('<div class="some-class">')
         expect(html.end.trim()).toEqual('</div>')
     })
 
     test('should accept web components', () => {
-        let html = app.resolveSelectorAndGenerateHtml('some-component');
+        let html = app._resolveSelectorAndGenerateHtml('some-component');
         expect(html.start.trim()).toEqual('<some-component>')
         expect(html.end.trim()).toEqual('</some-component>')
     })
 
     test('should create classes for containers', () => {
-        let html = app.resolveSelectorAndGenerateHtml('some-component.class');
+        let html = app._resolveSelectorAndGenerateHtml('some-component.class');
         expect(html.start.trim()).toEqual('<some-component class="class">')
         expect(html.end.trim()).toEqual('</some-component>')
     })
 
     test('should create IDs for containers', () => {
-        let html = app.resolveSelectorAndGenerateHtml('some-component#id');
+        let html = app._resolveSelectorAndGenerateHtml('some-component#id');
         expect(html.start.trim()).toEqual('<some-component id="id">')
         expect(html.end.trim()).toEqual('</some-component>')
     })
@@ -91,7 +91,7 @@ describe('getQueryRows', () => {
 
     let rows, numRows, numCols;
     beforeAll(() => {
-        let queryRows = app.getQueryRows("body/aside,article,article/footer");
+        let queryRows = app._getQueryRows("body/aside,article,article/footer");
         rows = queryRows.rows;
         numRows = queryRows.numRows;
         numCols = queryRows.numCols;
@@ -121,11 +121,11 @@ describe('buildSelectorDataForQuery', () => {
 
     let rows, numRows, numCols, selectors;
     beforeAll(() => {
-        let queryRows = app.getQueryRows("body/aside,article,article/footer");
+        let queryRows = app._getQueryRows("body/aside,article,article/footer");
         rows = queryRows.rows;
         numRows = queryRows.numRows;
         numCols = queryRows.numCols;
-        selectors = app.buildSelectorDataForQuery(rows, numRows, numCols)
+        selectors = app._buildSelectorDataForQuery(rows, numRows, numCols)
     })
     test('should give an output', () => {
         expect(selectors)
@@ -140,8 +140,8 @@ describe('buildSelectorDataForQuery', () => {
     })
 
     test('should output an array with unique selectors #2', () => {
-        let {rows, numRows, numCols} = app.getQueryRows("header/aside,.content,.content/footer");
-        let selectors = app.buildSelectorDataForQuery(rows, numRows, numCols);
+        let {rows, numRows, numCols} = app._getQueryRows("header/aside,.content,.content/footer");
+        let selectors = app._buildSelectorDataForQuery(rows, numRows, numCols);
         // console.log(selectors);
         expect(selectors['header']).toBeDefined();
         expect(selectors['aside']).toBeDefined();
@@ -150,8 +150,8 @@ describe('buildSelectorDataForQuery', () => {
     })
 
     test('should output an array with unique selectors #2', () => {
-        let {rows, numRows, numCols} = app.getQueryRows("body.body/aside#one,.content,.content,aside#two/footer");
-        let selectors = app.buildSelectorDataForQuery(rows, numRows, numCols);
+        let {rows, numRows, numCols} = app._getQueryRows("body.body/aside#one,.content,.content,aside#two/footer");
+        let selectors = app._buildSelectorDataForQuery(rows, numRows, numCols);
         expect(selectors['body.body']).toBeDefined();
         expect(selectors['aside#one']).toBeDefined();
         expect(selectors['.content']).toBeDefined();
@@ -165,25 +165,25 @@ describe('buildHTMLForQuery', () => {
 
     let rows, numRows, numCols, selectors;
     beforeAll(() => {
-        let queryRows = app.getQueryRows("header/aside,.content,.content/footer");
+        let queryRows = app._getQueryRows("header/aside,.content,.content/footer");
         rows = queryRows.rows;
         numRows = queryRows.numRows;
         numCols = queryRows.numCols;
-        selectors = app.buildSelectorDataForQuery(rows, numRows, numCols);
+        selectors = app._buildSelectorDataForQuery(rows, numRows, numCols);
     })
 
     test('should give an output', () => {
-        expect(app.buildHTMLForQuery(selectors, false, false))
+        expect(app._buildHTMLForQuery(selectors, false, false))
         .toBeDefined();
     })
 
     test('should be a string', () => {
-        expect(typeof app.buildHTMLForQuery(selectors, false, false))
+        expect(typeof app._buildHTMLForQuery(selectors, false, false))
         .toEqual('string');
     })
 
     test('should output all the selectors in the HTML', () => {
-        let generatedHtml = app.buildHTMLForQuery(selectors, false, false);
+        let generatedHtml = app._buildHTMLForQuery(selectors, false, false);
         document.body.innerHTML = generatedHtml;
         expect($('header')).toBeDefined();
         expect($('aside')).toBeDefined();
@@ -193,7 +193,7 @@ describe('buildHTMLForQuery', () => {
     })
 
     test('should respect highlights', () => {
-        let generatedHtml = app.buildHTMLForQuery(selectors, false, true)
+        let generatedHtml = app._buildHTMLForQuery(selectors, false, true)
         document.body.innerHTML = generatedHtml;
         expect($('header').innerHTML).toEqual('header');
         expect($('aside').innerHTML).toEqual('aside');
@@ -206,26 +206,26 @@ describe('buildStylesForQuery', () => {
 
     let rows, numRows, numCols, selectors;
     beforeAll(() => {
-        let queryRows = app.getQueryRows("header/aside,.content,.content/footer");
+        let queryRows = app._getQueryRows("header/aside,.content,.content/footer");
         rows = queryRows.rows;
         numRows = queryRows.numRows;
         numCols = queryRows.numCols;
-        selectors = app.buildSelectorDataForQuery(rows, numRows, numCols);
+        selectors = app._buildSelectorDataForQuery(rows, numRows, numCols);
     })
 
     test('should give an output', () => {
-        expect(app.buildStylesForQuery(selectors, false, false))
+        expect(app._buildStylesForQuery(selectors, false, false))
         .toBeDefined()
     })
 
     test('should be a string', () => {
-        expect(typeof app.buildStylesForQuery(selectors, false, false))
+        expect(typeof app._buildStylesForQuery(selectors, false, false))
         .toEqual('string')
     })
 
     test('should output correct CSS', () => {
-        let generatedHtml = app.buildHTMLForQuery(selectors, false, false);
-        let css = app.buildStylesForQuery(selectors, false, false);
+        let generatedHtml = app._buildHTMLForQuery(selectors, false, false);
+        let css = app._buildStylesForQuery(selectors, false, false);
         document.head.insertAdjacentHTML("beforeend", `<style>${css}</style>`)
         document.body.innerHTML = generatedHtml;
         expect(window.getComputedStyle($('header')).gridColumn).toBe('1 / 4')
@@ -240,8 +240,8 @@ describe('buildStylesForQuery', () => {
     })
 
     test('CSS should respect highlights and defaults', () => {
-        let generatedHtml = app.buildHTMLForQuery(selectors, true, true);
-        let css = app.buildStylesForQuery(selectors, true, true);
+        let generatedHtml = app._buildHTMLForQuery(selectors, true, true);
+        let css = app._buildStylesForQuery(selectors, true, true);
         document.head.insertAdjacentHTML("beforeend", `<style>${css}</style>`)
         document.body.innerHTML = generatedHtml;
         expect(window.getComputedStyle($('header')).padding.length).toBeGreaterThan(1)
@@ -252,37 +252,37 @@ describe('buildStylesForQuery', () => {
 
 describe('generateTemplateHtml', () => {
     test('holy-grail', () => {
-        expect(app.generateTemplateHtml('holy-grail', '.grid-container'))
+        expect(app._generateTemplateHtml('holy-grail', '.grid-container'))
         .toBeDefined();
     })
 
     test('2-col', () => {
-        expect(app.generateTemplateHtml('2-col', '.grid-container'))
+        expect(app._generateTemplateHtml('2-col', '.grid-container'))
         .toBeDefined();
     })
 
     test('3-col', () => {
-        expect(app.generateTemplateHtml('3-col', '.grid-container'))
+        expect(app._generateTemplateHtml('3-col', '.grid-container'))
         .toBeDefined();
     })
 
     test('4-col', () => {
-        expect(app.generateTemplateHtml('4-col', '.grid-container'))
+        expect(app._generateTemplateHtml('4-col', '.grid-container'))
         .toBeDefined();
     })
 
     test('2-row', () => {
-        expect(app.generateTemplateHtml('2-row', '.grid-container'))
+        expect(app._generateTemplateHtml('2-row', '.grid-container'))
         .toBeDefined();
     })
 
     test('3-row', () => {
-        expect(app.generateTemplateHtml('3-row', '.grid-container'))
+        expect(app._generateTemplateHtml('3-row', '.grid-container'))
         .toBeDefined();
     })
 
     test('4-row', () => {
-        expect(app.generateTemplateHtml('4-row', '.grid-container'))
+        expect(app._generateTemplateHtml('4-row', '.grid-container'))
         .toBeDefined();
     })
 })
@@ -290,38 +290,38 @@ describe('generateTemplateHtml', () => {
 
 describe('generateTemplateStyle', () => {
     test('holy-grail', () => {
-        expect(app.generateTemplateStyle('holy-grail', '.grid-container'))
+        expect(app._generateTemplateStyle('holy-grail', '.grid-container'))
         .toBeDefined();
     })
 
 
     test('2-col', () => {
-        expect(app.generateTemplateStyle('2-col', '.grid-container'))
+        expect(app._generateTemplateStyle('2-col', '.grid-container'))
         .toBeDefined();
     })
 
     test('3-col', () => {
-        expect(app.generateTemplateStyle('3-col', '.grid-container'))
+        expect(app._generateTemplateStyle('3-col', '.grid-container'))
         .toBeDefined();
     })
 
     test('4-col', () => {
-        expect(app.generateTemplateStyle('4-col', '.grid-container'))
+        expect(app._generateTemplateStyle('4-col', '.grid-container'))
         .toBeDefined();
     })
 
     test('2-row', () => {
-        expect(app.generateTemplateStyle('2-row', '.grid-container'))
+        expect(app._generateTemplateStyle('2-row', '.grid-container'))
         .toBeDefined();
     })
 
     test('3-row', () => {
-        expect(app.generateTemplateStyle('3-row', '.grid-container'))
+        expect(app._generateTemplateStyle('3-row', '.grid-container'))
         .toBeDefined();
     })
 
     test('4-row', () => {
-        expect(app.generateTemplateStyle('4-row', '.grid-container'))
+        expect(app._generateTemplateStyle('4-row', '.grid-container'))
         .toBeDefined();
     })
 })

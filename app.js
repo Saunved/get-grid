@@ -52,21 +52,21 @@ function getGrid(args){
 
     /* Get the HTML, CSS */
     if(args.query){
-        let parsed = parseQuery(args.query, container, args.default, args.highlight);
+        let parsed = _parseQuery(args.query, container, args.default, args.highlight);
         html = parsed.html;
         style = parsed.style;
     }
     else if (args.template){
-        html = generateTemplateHtml(args.template, container);
-        style = generateTemplateStyle(args.template, container);
+        html = _generateTemplateHtml(args.template, container);
+        style = _generateTemplateStyle(args.template, container);
     }
     else if(args.emmet){
         html = emmet.default(args.emmet);
-        style = generateStyle(args.columns, args.rows, container);
+        style = _generateStyle(args.columns, args.rows, container);
     }
     else {
-        html = generateHTML(args.columns, args.rows, container);
-        style = generateStyle(args.columns, args.rows, container);
+        html = _generateHTML(args.columns, args.rows, container);
+        style = _generateStyle(args.columns, args.rows, container);
     }
         
     /* Decide how it will be output */
@@ -113,10 +113,10 @@ if(process.env.NODE_ENV!=='test'){
  * @param {*} container The default parent classname or the user-defined classname (if specified)
  * @returns a back-ticked string with the HTML code
  */
-function generateHTML(c, r, container){
+function _generateHTML(c, r, container){
     let html = '';
     if(container){
-        let generatedHtml = resolveSelectorAndGenerateHtml(container);
+        let generatedHtml = _resolveSelectorAndGenerateHtml(container);
         html+=generatedHtml.start;
         for(let i=0; i<c*r; i++){
             html+=`\t<div>${i+1}</div>\n`;
@@ -126,7 +126,7 @@ function generateHTML(c, r, container){
     return html;
 }
 
-function resolveSelectorAndGenerateHtml(container){
+function _resolveSelectorAndGenerateHtml(container){
     let start = '';
     let end = '';
 
@@ -147,7 +147,7 @@ function resolveSelectorAndGenerateHtml(container){
  * @param {*} container The default parent classname or the user-defined classname (if specified)
  * @returns a back-ticked string with the CSS
  */
-function generateStyle(c, r, container){
+function _generateStyle(c, r, container){
     return `${container}{
 display: grid;
 grid-template-columns: repeat(${c}, 1fr);
@@ -163,29 +163,29 @@ grid-gap: 1em;
  * @param {*} container
  * @returns a back-ticked string with the HTML
  */
-function generateTemplateHtml(template, container){
+function _generateTemplateHtml(template, container){
     switch(template){
         case 'holy-grail': {
             // return getHolyGrail(container).html;
-            return parseQuery("header/aside.left-sidebar,article,article,aside.right-sidebar/footer", container, true, true).html;
+            return _parseQuery("header/aside.left-sidebar,article,article,aside.right-sidebar/footer", container, true, true).html;
         }
         case '2-col': {
-            return generateHTML(2, 1, container);
+            return _generateHTML(2, 1, container);
         }
         case '3-col': {
-            return generateHTML(3, 1, container);
+            return _generateHTML(3, 1, container);
         }
         case '4-col': {
-            return generateHTML(4, 1, container);
+            return _generateHTML(4, 1, container);
         }
         case '2-row': {
-            return generateHTML(1, 2, container);
+            return _generateHTML(1, 2, container);
         }
         case '3-row': {
-            return generateHTML(1, 3, container);
+            return _generateHTML(1, 3, container);
         }
         case '4-row': {
-            return generateHTML(1, 4, container);
+            return _generateHTML(1, 4, container);
         }
 
     }
@@ -198,29 +198,29 @@ function generateTemplateHtml(template, container){
  * @param {*} container
  * @returns a back-ticked string with the CSS
  */
-function generateTemplateStyle(template, container){
+function _generateTemplateStyle(template, container){
     switch(template){
         case 'holy-grail': {
             // return getHolyGrail(container).style;
-            return parseQuery("header/aside.left-sidebar,article,article,aside.right-sidebar/footer", container, true, true).style;
+            return _parseQuery("header/aside.left-sidebar,article,article,aside.right-sidebar/footer", container, true, true).style;
         }
         case '2-col': {
-            return generateStyle(2, 1, container);
+            return _generateStyle(2, 1, container);
         }
         case '3-col': {
-            return generateStyle(3, 1, container);
+            return _generateStyle(3, 1, container);
         }
         case '4-col': {
-            return generateStyle(4, 1, container);
+            return _generateStyle(4, 1, container);
         }
         case '2-row': {
-            return generateStyle(1, 2, container);
+            return _generateStyle(1, 2, container);
         }
         case '3-row': {
-            return generateStyle(1, 3, container);
+            return _generateStyle(1, 3, container);
         }
         case '4-row': {
-            return generateStyle(1, 4, container);
+            return _generateStyle(1, 4, container);
         }
     }
 }
@@ -235,17 +235,17 @@ function generateTemplateStyle(template, container){
  * @param {Boolean} highlights Value which determine whether background and borders should be set
  * @returns an object containing {html: <the-html>, css: <the-css> }
  */
-function parseQuery(query, container, defaults, highlights){
+function _parseQuery(query, container, defaults, highlights){
 // Get the rows, and the number of rows, columns
-let {rows, numRows, numCols} = getQueryRows(query);
+let {rows, numRows, numCols} = _getQueryRows(query);
 
 // Generate the selectors
-let selectors = buildSelectorDataForQuery(rows, numRows, numCols);
+let selectors = _buildSelectorDataForQuery(rows, numRows, numCols);
 
 // Create the HTML
-let containerHtml = resolveSelectorAndGenerateHtml(container);
+let containerHtml = _resolveSelectorAndGenerateHtml(container);
 html =  `${containerHtml.start}
-${buildHTMLForQuery(selectors, defaults, highlights)}
+${_buildHTMLForQuery(selectors, defaults, highlights)}
 ${containerHtml.end}
 `
 // Create the CSS
@@ -266,7 +266,7 @@ if(defaults){
 }
 style+=`}\n`;
 
-style+=buildStylesForQuery(selectors, defaults, highlights).toString();
+style+=_buildStylesForQuery(selectors, defaults, highlights).toString();
 
     return {
         style: style,
@@ -274,7 +274,7 @@ style+=buildStylesForQuery(selectors, defaults, highlights).toString();
     }
 }
 
-function getQueryRows(query){
+function _getQueryRows(query){
     let numRows = 0;
     let numCols = 0;
     let entireRows = query.split('/');
@@ -301,7 +301,7 @@ function getQueryRows(query){
  * @param {*} numCols
  * @returns an array of objects containing unique classes along with values for column-start, column-end, etc.
  */
-function buildSelectorDataForQuery(rows, numRows, numCols){
+function _buildSelectorDataForQuery(rows, numRows, numCols){
     let selectors = {};
     let uniqueSelectors = new Set();
     let prevCol = '';
@@ -360,10 +360,10 @@ function buildSelectorDataForQuery(rows, numRows, numCols){
  * @param {*} selectors
  * @returns
  */
-function buildHTMLForQuery(selectors, defaults, highlights){
+function _buildHTMLForQuery(selectors, defaults, highlights){
     let html = '';
     for(key in selectors){
-        let generatedHtml = resolveSelectorAndGenerateHtml(key);
+        let generatedHtml = _resolveSelectorAndGenerateHtml(key);
         html+=generatedHtml.start;
 
         // Prints the name of the selector inside the tag
@@ -383,7 +383,7 @@ function buildHTMLForQuery(selectors, defaults, highlights){
  * @param {*} selectors
  * @returns
  */
-function buildStylesForQuery(selectors, defaults, highlights){
+function _buildStylesForQuery(selectors, defaults, highlights){
     let style = '';
     for(let key in selectors){
 style+=`${key}{
@@ -401,12 +401,12 @@ grid-row: ${selectors[key].gridRowStart} / ${selectors[key].gridRowEnd};
     return style;
 }
 
-module.exports.generateHTML = generateHTML;
-module.exports.resolveSelectorAndGenerateHtml = resolveSelectorAndGenerateHtml;
-module.exports.getQueryRows = getQueryRows;
-module.exports.buildSelectorDataForQuery = buildSelectorDataForQuery;
-module.exports.buildHTMLForQuery = buildHTMLForQuery;
-module.exports.buildStylesForQuery = buildStylesForQuery;
-module.exports.generateTemplateStyle = generateTemplateStyle;
-module.exports.generateTemplateHtml = generateTemplateHtml;
+module.exports._generateHTML = _generateHTML;
+module.exports._resolveSelectorAndGenerateHtml = _resolveSelectorAndGenerateHtml;
+module.exports._getQueryRows = _getQueryRows;
+module.exports._buildSelectorDataForQuery = _buildSelectorDataForQuery;
+module.exports._buildHTMLForQuery = _buildHTMLForQuery;
+module.exports._buildStylesForQuery = _buildStylesForQuery;
+module.exports._generateTemplateStyle = _generateTemplateStyle;
+module.exports._generateTemplateHtml = _generateTemplateHtml;
 module.exports.getGrid = getGrid;

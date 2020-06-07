@@ -1,6 +1,6 @@
 Install the tool from npm:
 ```shell
-npm i get-grid@next -g
+npm i get-grid -g
 ```
 
 You should probably read [this article on dev.to](https://dev.to/saunved/a-cli-tool-for-creating-css-grid-layouts-2aj4) to find out more about get-grid.
