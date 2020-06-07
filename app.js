@@ -72,31 +72,45 @@ function getGrid(args){
     /* Decide how it will be output */
 
     if(!args.output){
-        console.log('Grid copied to clipboard');
+        if(process.env.NODE_ENV!=='test'){
+            console.log('Grid copied to clipboard');
+        }
         if(args.onlyStyle){
+            if(process.env.NODE_ENV!=='test'){
             clip.writeSync(style);
+            }
             return { style: style }
         }
         else if(args.onlyHtml){
-            clip.writeSync(html);    
+            if(process.env.NODE_ENV!=='test'){
+            clip.writeSync(html);  
+            }  
             return { html, html }
         }
         else{
+            if(process.env.NODE_ENV!=='test'){
             clip.writeSync(html + '\n' + style);
+            }
             return { html, html, style: style }
         }
     }
     else{
         if(args.onlyStyle){
+            if(process.env.NODE_ENV!=='test'){
             console.log(style); 
+            }
             return { style: style }
         }
         else if(args.onlyHtml){
+            if(process.env.NODE_ENV!=='test'){
             console.log(html);
+            }
             return { html, html }
         }
         else{
+            if(process.env.NODE_ENV!=='test'){
             console.log(html + '\n' + style);
+            }
             return { html, html, style: style }
         }
     }
